@@ -19,7 +19,7 @@ struct iovec;
 \
 	_( BOOT,        "^BOOT",        "^BOOT:") \
 	_( BUSY,        "BUSY",         "BUSY\r") \
-	_( CEND,        "^CEND",        "^CEND:") \
+	_( COPS,        "+COPS",        "+COPS:") \
 \
 	_( CMGR,        "+CMGR",        "+CMGR:") \
 	_( CMS_ERROR,   "+CMS ERROR",   "+CMS ERROR:") \
@@ -29,9 +29,9 @@ struct iovec;
 	_( CNUM,        "+CNUM",        "+CNUM:") \
 		/* and "ERROR+CNUM:", hacked later on */ \
 \
-	_( CONF,        "^CONF",        "^CONF:") \
+	_( ORIG,        "^ORIG",        "^DSCI:") \
+	_( CEND,        "^CEND",        "VOICE CALL:") \
 	_( CONN,        "^CONN",        "^CONN:") \
-	_( COPS,        "+COPS",        "+COPS:") \
 	_( CPIN,        "+CPIN",        "+CPIN:") \
 \
 	_( CREG,        "+CREG",        "+CREG:") \
@@ -48,7 +48,7 @@ struct iovec;
 \
 	_( NO_DIALTONE, "NO DIALTONE",  "NO DIALTONE\r") \
 	_( OK,          "OK",           "OK\r") \
-	_( ORIG,        "^ORIG",        "^ORIG:") \
+	_( CONF,        "^CONF",        "MISSED_CALL:") \
 	_( RING,        "RING",         "RING\r") \
 \
 	_( RSSI,        "^RSSI",        "^RSSI:") \

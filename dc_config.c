@@ -33,11 +33,15 @@ static int dc_uconfig_fill(struct ast_config * cfg, const char * cat, struct dc_
 	const char * data_tty;
 	const char * imei;
 	const char * imsi;
+	const char * quec_uac;
+	const char * alsadev;
 
 	audio_tty = ast_variable_retrieve (cfg, cat, "audio");
 	data_tty  = ast_variable_retrieve (cfg, cat, "data");
 	imei = ast_variable_retrieve (cfg, cat, "imei");
 	imsi = ast_variable_retrieve (cfg, cat, "imsi");
+        quec_uac = ast_variable_retrieve (cfg, cat, "quec_uac");
+        alsadev = ast_variable_retrieve (cfg, cat, "alsadev");
 
 	if(imei && strlen(imei) != IMEI_SIZE) {
 		ast_log (LOG_WARNING, "[%s] Ignore invalid IMEI value '%s'\n", cat, imei);
@@ -48,9 +52,9 @@ static int dc_uconfig_fill(struct ast_config * cfg, const char * cat, struct dc_
 		imsi = NULL;
 		}
 
-	if(!audio_tty && !imei && !imsi)
+	if(!audio_tty && !quec_uac)
 	{
-		ast_log (LOG_ERROR, "Skipping device %s. Missing required audio_tty setting\n", cat);
+		ast_log (LOG_ERROR, "Skipping device %s. Missing required audio setting\n", cat);
 		return 1;
 	}
 
@@ -60,9 +64,9 @@ static int dc_uconfig_fill(struct ast_config * cfg, const char * cat, struct dc_
 		return 1;
 	}
 
-	if((!data_tty && audio_tty) || (data_tty && !audio_tty))
+	if((!alsadev && quec_uac) || (alsadev && !quec_uac))
 	{
-		ast_log (LOG_ERROR, "Skipping device %s. data_tty and audio_tty should use together\n", cat);
+		ast_log (LOG_ERROR, "Skipping device %s. If uac is set as 1, alsa device must be specified\n", cat);
 		return 1;
 	}
 
@@ -71,6 +75,8 @@ static int dc_uconfig_fill(struct ast_config * cfg, const char * cat, struct dc_
 	ast_copy_string (config->audio_tty,	S_OR(audio_tty, ""), sizeof (config->audio_tty));
 	ast_copy_string (config->imei,		S_OR(imei, ""),	     sizeof (config->imei));
 	ast_copy_string (config->imsi,		S_OR(imsi, ""),	     sizeof (config->imsi));
+	ast_copy_string (config->quec_uac,	S_OR(quec_uac, ""),  sizeof (config->quec_uac));
+	ast_copy_string (config->alsadev,	S_OR(alsadev, ""),   sizeof (config->alsadev));
 
 	return 0;
 }

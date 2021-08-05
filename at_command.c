@@ -33,7 +33,7 @@ static const char cmd_at[] 	 = "AT\r";
 static const char cmd_chld1x[]   = "AT+CHLD=1%d\r";
 static const char cmd_chld2[]    = "AT+CHLD=2\r";
 static const char cmd_clcc[]     = "AT+CLCC\r";
-static const char cmd_ddsetex2[] = "AT+QPCMV=1,0\r";
+static const char cmd_ddsetex2[] = "AT\r";
 
 /*!
  * \brief Format and fill generic command
@@ -110,7 +110,7 @@ static int __attribute__ ((format(printf, 4, 5))) at_enqueue_generic(struct cpvt
  */
 EXPORT_DEF int at_enqueue_initialization(struct cpvt *cpvt, at_cmd_t from_command)
 {
-	static const char cmd2[] = "ATZ\r";
+	static const char cmd2[] = "AT^DSCI=1\r";
 	static const char cmd3[] = "ATE0\r";
 
 	static const char cmd5[] = "AT+CGMI\r";
@@ -129,6 +129,7 @@ EXPORT_DEF int at_enqueue_initialization(struct cpvt *cpvt, at_cmd_t from_comman
 	static const char cmd16[] = "AT+CNUM\r";
 
 	static const char cmd17[] = "AT+QPCMV?\r";
+	static const char cmd17a[] = "AT+CPCMREG?\r";
 //	static const char cmd18[] = "AT+CLIP=0\r";
 	static const char cmd19[] = "AT+CSSN=1,1\r";
 	static const char cmd20[] = "AT+CMGF=0\r";
@@ -157,8 +158,8 @@ EXPORT_DEF int at_enqueue_initialization(struct cpvt *cpvt, at_cmd_t from_comman
 		ATQ_CMD_DECLARE_STI(CMD_AT_CREG_INIT,cmd14),	/* GSM registration status setting */
 		ATQ_CMD_DECLARE_ST(CMD_AT_CREG, cmd15),		/* GSM registration status */
 		ATQ_CMD_DECLARE_STI(CMD_AT_CNUM, cmd16),		/* Get Subscriber number */
-		ATQ_CMD_DECLARE_ST(CMD_AT_CVOICE, cmd17),	/* read the current voice mode, and return sampling rate、data bit、frame period */
-
+		ATQ_CMD_DECLARE_STI(CMD_AT_CVOICE, cmd17),	/* read the current voice mode, and return sampling rate、data bit、frame period */
+		ATQ_CMD_DECLARE_STI(CMD_AT_CVOICE2, cmd17a),
 		ATQ_CMD_DECLARE_ST(CMD_AT_CSCA, cmd6),		/* Get SMS Service center address */
 //		ATQ_CMD_DECLARE_ST(CMD_AT_CLIP, cmd18),		/* disable  Calling line identification presentation in unsolicited response +CLIP: <number>,<type>[,<subaddr>,<satype>[,[<alpha>][,<CLI validitity>]] */
 		ATQ_CMD_DECLARE_ST(CMD_AT_CSSN, cmd19),		/* activate Supplementary Service Notification with CSSI and CSSU */
@@ -417,7 +418,7 @@ EXPORT_DEF int at_enqueue_dtmf(struct cpvt *cpvt, char digit)
 
 		case '*':
 		case '#':
-			return at_enqueue_generic(cpvt, CMD_AT_DTMF, 1, "AT^DTMF=%d,%c\r", cpvt->call_idx, digit);
+			return at_enqueue_generic(cpvt, CMD_AT_DTMF, 1, "AT+VTS=%c\r", digit);
 	}
 	return -1;
 }
@@ -502,6 +503,7 @@ EXPORT_DEF int at_enqueue_dial(struct cpvt *cpvt, const char *number, int clir)
 	char * tmp = NULL;
 	at_queue_cmd_t cmds[6];
 
+
 	if(PVT_STATE(pvt, chan_count[CALL_STATE_ACTIVE]) > 0 && CPVT_TEST_FLAG(cpvt, CALL_FLAG_HOLD_OTHER))
 	{
 		ATQ_CMD_INIT_ST(cmds[0], CMD_AT_CHLD_2, cmd_chld2);
@@ -522,8 +524,12 @@ EXPORT_DEF int at_enqueue_dial(struct cpvt *cpvt, const char *number, int clir)
 		ATQ_CMD_INIT_DYNI(cmds[cmdsno], CMD_AT_CLIR);
 		cmdsno++;
 	}
-
-	err = at_fill_generic_cmd(&cmds[cmdsno], "ATD%s;\r", number);
+        if (pvt->is_simcom) {
+	err = at_fill_generic_cmd(&cmds[cmdsno], "AT+CPCMREG=0;D%s;\r", number); }
+        else if (strcmp(CONF_UNIQ(pvt, quec_uac),"1") == 0) {
+        err = at_fill_generic_cmd(&cmds[cmdsno], "AT+QPCMV=0;+QPCMV=1,2;D%s;\r", number); }
+        else {
+        err = at_fill_generic_cmd(&cmds[cmdsno], "AT+QPCMV=0;+QPCMV=1,0;D%s;\r", number); }
 	if(err)
 	{
 		ast_free(tmp);
@@ -538,8 +544,8 @@ EXPORT_DEF int at_enqueue_dial(struct cpvt *cpvt, const char *number, int clir)
 	ATQ_CMD_INIT_ST(cmds[cmdsno], CMD_AT_CLCC, cmd_clcc);
 	cmdsno++;
 
-	ATQ_CMD_INIT_ST(cmds[cmdsno], CMD_AT_DDSETEX, cmd_ddsetex2);
-	cmdsno++;
+/*	ATQ_CMD_INIT_ST(cmds[cmdsno], CMD_AT_DDSETEX, cmd_ddsetex2);
+	cmdsno++; */
 
 
 	if (at_queue_insert(cpvt, cmds, cmdsno, 1) != 0) {
@@ -558,9 +564,10 @@ EXPORT_DEF int at_enqueue_dial(struct cpvt *cpvt, const char *number, int clir)
  */
 EXPORT_DEF int at_enqueue_answer(struct cpvt *cpvt)
 {
+	pvt_t* pvt = cpvt->pvt;
 	at_queue_cmd_t cmds[] = {
 		ATQ_CMD_DECLARE_DYN(CMD_AT_A),
-		ATQ_CMD_DECLARE_ST(CMD_AT_DDSETEX, cmd_ddsetex2),
+//		ATQ_CMD_DECLARE_ST(CMD_AT_DDSETEX, cmd_ddsetex2),
 		};\
 	int count = ITEMS_OF(cmds);
 	const char * cmd1;
@@ -568,7 +575,13 @@ EXPORT_DEF int at_enqueue_answer(struct cpvt *cpvt)
 	if(cpvt->state == CALL_STATE_INCOMING)
 	{
 /* FIXME: channel number? */
-		cmd1 = "ATA\r";
+             if (pvt->is_simcom) {
+		cmd1 = "AT+CPCMREG=0;A\r"; }
+             else if (strcmp(CONF_UNIQ(pvt, quec_uac),"1") == 0) { 
+                cmd1 = "AT+QPCMV=0;+QPCMV=1,2;A\r"; }
+             else { 
+                cmd1 = "AT+QPCMV=0;+QPCMV=1,0;A\r"; }
+
 	}
 	else if(cpvt->state == CALL_STATE_WAITING)
 	{
@@ -591,6 +604,19 @@ EXPORT_DEF int at_enqueue_answer(struct cpvt *cpvt)
 		chan_quectel_err = E_QUEUE;
 		return -1;
 	}
+             if (pvt->is_simcom) {
+
+                sleep(1);
+                static const char cmd_atve[] = "AT+CPCMREG=1\r";
+                static const at_queue_cmd_t cmds1[] = {
+		ATQ_CMD_DECLARE_STIT(CMD_AT_DDSETEX, cmd_atve, ATQ_CMD_TIMEOUT_MEDIUM, 0),
+		};
+
+	        if (at_queue_insert_const(cpvt, cmds1, ITEMS_OF(cmds1), 1) != 0) {
+		chan_quectel_err = E_QUEUE;
+		return -1;
+	        }
+                                  }
 	return 0;
 }
 
