@@ -1,2 +1,8 @@
-makefile is for using openwrt sdk with local folder feed with makefile outside and all the rest of files from this repo in folder called src
-Replace configure.ac with file provided
+You can add this repo as a package to openwrt via a custom feed:
+
+```
+src-link quectel /path/to/asterisk-chan-quectel/feed
+```
+
+You can then build the package with `$ make package/asterisk-chan-quectel/compile V=sc`
+after selecting the package in menuconfig.
