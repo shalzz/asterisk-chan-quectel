@@ -8,21 +8,19 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=asterisk-chan-quectel
-PKG_VERSION:=2.1-20211201
+
+PKG_SOURCE_PROTO:=git
+PKG_SOURCE_URL:=https://github.com/t4rd15/asterisk-chan-quectel.git
+PKG_SOURCE_VERSION:=a9b94e2812720451fb97b46fc1952ae21d10ff1b
+PKG_SOURCE_DATE=2022-06-02
 PKG_RELEASE:=1
+PKG_MIRROR_HASH:=916bc21063e030c4e310ae5097e1255b244b94f7d252b458586ecf2fec5709de
 
 PKG_FIXUP:=autoreconf
 
 PKG_LICENSE:=GPL-2.0
 PKG_LICENSE_FILES:=COPYRIGHT.txt LICENSE.txt
 PKG_MAINTAINER:=Jiri Slachta <jiri@slachta.eu>
-
-define Build/Prepare
-PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(BUILD_VARIANT)/$(PKG_NAME)-$(PKG_VERSION)
-$(CP) ./src/* $(PKG_BUILD_DIR)/
-endef
-
-
 
 MODULES_DIR:=/usr/lib/asterisk/modules
 
@@ -36,22 +34,18 @@ define Package/asterisk-chan-quectel
   CATEGORY:=Network
   URL:=https://github.com/IchthysMaranatha/asterisk-chan-quectel
   DEPENDS:=asterisk $(ICONV_DEPENDS) +kmod-usb-acm +kmod-usb-serial +kmod-usb-serial-option +libusb-1.0 +usb-modeswitch +alsa-lib
-  TITLE:=Asterisk Mobile Telephony Module
+  TITLE:= Asterisk Mobile Telephony Module for quectel chips
 endef
 
-define Package/description/Default
- Asterisk channel driver for mobile telephony.
+define Package/asterisk-chan-quectel/description
+ Asterisk channel driver for quectel chips.
 endef
-
-Package/asterisk-chan-quectel/description = $(Package/description/Default)
-
-#CONFIGURE_ARGS+= \
-#	--with-asterisk=$(CHAN_quectel_AST_HEADERS)
 
 CONFIGURE_ARGS+= \
 	--with-asterisk=$(STAGING_DIR)/usr/include \
 	--with-astversion=18 \
 	--with-iconv=$(ICONV_PREFIX)/include
+#	DESTDIR=/usr/lib/asterisk/modules
 
 TARGET_CFLAGS+= \
 	-I$(CHAN_quectel_AST_HEADERS)
@@ -63,20 +57,30 @@ CONFIGURE_VARS += \
 	ac_cv_type_size_t=yes \
 	ac_cv_type_ssize_t=yes
 
-
-define Package/conffiles/Default
+define Package/asterisk-chan-quectel/conffiles
 /etc/asterisk/quectel.conf
 endef
 
-Package/asterisk-chan-quectel/conffiles = $(Package/conffiles/Default)
-
-define Package/Install/Default
+define Package/asterisk-chan-quectel/install
 	$(INSTALL_DIR) $(1)/etc/asterisk
 	$(INSTALL_DATA) $(PKG_BUILD_DIR)/etc/quectel.conf $(1)/etc/asterisk
 	$(INSTALL_DIR) $(1)$(MODULES_DIR)
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/chan_quectel.so $(1)$(MODULES_DIR)
 endef
 
-Package/asterisk-chan-quectel/install = $(Package/Install/Default)
+define Package/asterisk-chan-quectel/postinst
+#!/bin/sh
+if [ -z "$${IPKG_INSTROOT}" ]; then
+  echo
+  echo "o-------------------------------------------------------------------o"
+  echo "| asterisk-chan-quectel note                                         |"
+  echo "o-------------------------------------------------------------------o"
+  echo "| Adding the \"asterisk\" user to the \"dialout\" group might be        |"
+  echo "| required for asterisk to be able to access the quectel.            |"
+  echo "o-------------------------------------------------------------=^_^=-o"
+  echo
+fi
+exit 0
+endef
 
 $(eval $(call BuildPackage,asterisk-chan-quectel))
