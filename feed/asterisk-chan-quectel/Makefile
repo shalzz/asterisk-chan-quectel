@@ -45,6 +45,7 @@ CONFIGURE_ARGS+= \
 	--with-asterisk=$(STAGING_DIR)/usr/include \
 	--with-astversion=18 \
 	--with-iconv=$(ICONV_PREFIX)/include
+	--enable-debug \
 #	DESTDIR=/usr/lib/asterisk/modules
 
 TARGET_CFLAGS+= \
