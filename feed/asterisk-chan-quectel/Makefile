@@ -13,7 +13,7 @@ PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://github.com/IchthysMaranatha/asterisk-chan-quectel.git
 PKG_SOURCE_VERSION:=f9828978a608be6c32282f2637863a45f00c3d25
 PKG_SOURCE_DATE=2022-06-02
-PKG_RELEASE:=1
+PKG_RELEASE:=2
 PKG_MIRROR_HASH:=7e203655c3b752e6cda06dadfa55ee49340b7c91026d1232d4912e52511dad92
 
 PKG_FIXUP:=autoreconf
@@ -44,8 +44,8 @@ endef
 CONFIGURE_ARGS+= \
 	--with-asterisk=$(STAGING_DIR)/usr/include \
 	--with-astversion=18 \
-	--with-iconv=$(ICONV_PREFIX)/include
-	--enable-debug \
+	--with-iconv=$(ICONV_PREFIX)/include \
+	--enable-debug
 #	DESTDIR=/usr/lib/asterisk/modules
 
 TARGET_CFLAGS+= \
