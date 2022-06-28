@@ -10,11 +10,11 @@ include $(TOPDIR)/rules.mk
 PKG_NAME:=asterisk-chan-quectel
 
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_URL:=https://github.com/IchthysMaranatha/asterisk-chan-quectel.git
-PKG_SOURCE_VERSION:=f9828978a608be6c32282f2637863a45f00c3d25
-PKG_SOURCE_DATE=2022-06-02
-PKG_RELEASE:=2
-PKG_MIRROR_HASH:=7e203655c3b752e6cda06dadfa55ee49340b7c91026d1232d4912e52511dad92
+PKG_SOURCE_URL:=https://github.com/shalzz/asterisk-chan-quectel.git
+PKG_SOURCE_VERSION:=a23bffc0f87a28d2981b30559a7f27e1667cc60a
+PKG_SOURCE_DATE=2022-06-28
+PKG_RELEASE:=1
+PKG_MIRROR_HASH:=0bd5a4df13921b6c2d103239a38cf5ec0e5c395531d1594bc3b7c1c6737bb5e6
 
 PKG_FIXUP:=autoreconf
 
