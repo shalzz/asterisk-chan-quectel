@@ -135,7 +135,7 @@ EXPORT_DEF int at_enqueue_initialization(struct cpvt *cpvt, at_cmd_t from_comman
 	static const char cmd20[] = "AT+CMGF=0\r";
 	static const char cmd21[] = "AT+CSCS=\"UCS2\"\r";
 
-	static const char cmd22[] = "AT+CPMS=\"SM\",\"SM\",\"SM\"\r";
+	static const char cmd22[] = "AT+CPMS=\"ME\",\"ME\",\"ME\"\r";
 	static const char cmd23[] = "AT+CNMI=2,1,0,2,0\r";
 	static const char cmd24[] = "AT+CSQ\r";
 
