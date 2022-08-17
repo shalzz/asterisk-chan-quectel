@@ -44,9 +44,14 @@ endef
 CONFIGURE_ARGS+= \
 	--with-asterisk=$(STAGING_DIR)/usr/include \
 	--with-astversion=18 \
-	--with-iconv=$(ICONV_PREFIX)/include \
 	--enable-debug
 #	DESTDIR=/usr/lib/asterisk/modules
+
+ifeq ($(CONFIG_BUILD_NLS),y)
+CONFIGURE_ARGS+=--with-iconv=$(ICONV_PREFIX)/include
+else
+CONFIGURE_ARGS+=--with-iconv=$(TOOLCHAIN_DIR)/include
+endif
 
 TARGET_CFLAGS+= \
 	-I$(CHAN_quectel_AST_HEADERS)
